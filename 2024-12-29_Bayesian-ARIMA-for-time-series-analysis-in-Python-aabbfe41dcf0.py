@@ -98,7 +98,7 @@ mape = np.mean(np.abs((y - posterior_mean) / y)) * 100
 
 logger.info(f"Mean Absolute Percentage Error (MAPE): {mape:.2f}%")
 
-Mean Absolute Percentage Error (MAPE): 7.06%
+# Mean Absolute Percentage Error (MAPE): 7.06%
 
 
 # Train-Test Split using time series cross-validation (last fold as test)
@@ -134,5 +134,5 @@ plt.legend()
 plt.tight_layout()
 plt.show()
 
-Total fit time: 0.101 seconds
-Mean Absolute Percentage Error (MAPE): 1.81%
+# Total fit time: 0.101 seconds
+# Mean Absolute Percentage Error (MAPE): 1.81%
