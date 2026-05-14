@@ -79,26 +79,26 @@ This auto ARIMA approach is much (much) faster and is more accurate.
 
 
 ### Benefits and Drawbacks of Bayesian Time Series
-**Benefits**:
+Benefits:
 
 1.  [Explicitly models uncertainty, providing probabilistic forecasts.]
 2.  [Incorporates expert knowledge through the use of priors.]
 3.  [Handles complex, irregular, and noisy data effectively.]
 
-**Drawbacks**:
+Drawbacks:
 
 1.  [Computationally intensive compared to traditional methods.]
 2.  [Requires careful selection of priors, which can influence outcomes.]
 3.  [Steeper learning curve for implementation and interpretation.]
 
 ### Applications of Bayesian Time Series
-1.  [**Financial Forecasting**: Quantify uncertainty in stock price movements, portfolio returns, or market volatility.]
-2.  [**Demand Forecasting**: Estimate ranges for future product or service demand, complete with confidence intervals.]
-3.  [**Healthcare Monitoring**: Predict patient health metrics, such as heart rate or glucose levels, with credible intervals to account for uncertainty.]
-4.  [**Anomaly Detection**: Leverage probabilistic intervals to identify deviations from expected patterns, such as system failures or fraudulent activity.]
+1.  [Financial Forecasting: Quantify uncertainty in stock price movements, portfolio returns, or market volatility.]
+2.  [Demand Forecasting: Estimate ranges for future product or service demand, complete with confidence intervals.]
+3.  [Healthcare Monitoring: Predict patient health metrics, such as heart rate or glucose levels, with credible intervals to account for uncertainty.]
+4.  [Anomaly Detection: Leverage probabilistic intervals to identify deviations from expected patterns, such as system failures or fraudulent activity.]
 ### Next steps 
 
-Bayesian time series analysis is a versatile framework for forecasting and quantifying uncertainty. By integrating prior knowledge and providing probabilistic forecasts, these methods offer valuable insights in fields where uncertainty is intrinsic to decision-making. Tools like **PyMC** and **ArviZ** simplify the implementation and visualization of Bayesian models, making them accessible for practical use. Visit us at [*DataDrivenInvestor.com*](https://www.datadriveninvestor.com/)
+Bayesian time series analysis is a versatile framework for forecasting and quantifying uncertainty. By integrating prior knowledge and providing probabilistic forecasts, these methods offer valuable insights in fields where uncertainty is intrinsic to decision-making. Tools like PyMC and ArviZ simplify the implementation and visualization of Bayesian models, making them accessible for practical use. Visit us at [*DataDrivenInvestor.com*](https://www.datadriveninvestor.com/)
 
 Subscribe to DDIntel [*here*](https://www.ddintel.com/).
 

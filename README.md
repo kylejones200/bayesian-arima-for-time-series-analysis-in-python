@@ -1,7 +1,7 @@
 # Bayesian ARIMA for time series analysis in Python
 
-**Published:** 2024-12-29
-**Medium:** [https://medium.com/@kyle-t-jones/bayesian-arima-for-time-series-analysis-in-python-aabbfe41dcf0](https://medium.com/@kyle-t-jones/bayesian-arima-for-time-series-analysis-in-python-aabbfe41dcf0)
+Published: 2024-12-29
+Medium: [https://medium.com/@kyle-t-jones/bayesian-arima-for-time-series-analysis-in-python-aabbfe41dcf0](https://medium.com/@kyle-t-jones/bayesian-arima-for-time-series-analysis-in-python-aabbfe41dcf0)
 
 ## About
 
