@@ -10,6 +10,7 @@ import numpy as np
 import pandas as pd
 import pmdarima as pmd
 import pymc as pm
+np.random.seed(42)
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(
@@ -20,7 +21,6 @@ logging.basicConfig(
 
 
 # Simulated Time Series Data
-np.random.seed(42)
 n = 100
 x = np.arange(n)
 y = 5 + 0.5 * x + np.random.normal(0, 2, n)  # Linear trend with noise
