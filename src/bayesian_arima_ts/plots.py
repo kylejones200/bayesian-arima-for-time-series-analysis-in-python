@@ -174,12 +174,16 @@ def plot_posterior_predictive(
 ) -> None:
     if "posterior_predictive" not in idata:
         return
-    y_ppc = idata["posterior_predictive"]["y"].stack(sample=("chain", "draw")).values
-    if y_ppc.ndim > 2:
-        y_ppc = y_ppc.reshape(y_ppc.shape[0], -1)
-    mean = y_ppc.mean(axis=0)
-    lower = np.percentile(y_ppc, 2.5, axis=0)
-    upper = np.percentile(y_ppc, 97.5, axis=0)
+    y_ppc = idata["posterior_predictive"]["y"]
+    stacked = y_ppc.stack(sample=("chain", "draw"))
+    sample_axis = tuple(i for i, dim in enumerate(stacked.dims) if dim == "sample")
+    values = np.asarray(stacked.values, dtype=float)
+    mean = values.mean(axis=sample_axis)
+    lower = np.percentile(values, 2.5, axis=sample_axis)
+    upper = np.percentile(values, 97.5, axis=sample_axis)
+    mean = np.squeeze(mean)
+    lower = np.squeeze(lower)
+    upper = np.squeeze(upper)
 
     fig, ax = plt.subplots(figsize=(10, 5))
     ax.plot(train_index, train, label="Observed", color="black", linewidth=1.2)

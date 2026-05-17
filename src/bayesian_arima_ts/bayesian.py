@@ -132,7 +132,10 @@ def fit_bayesian_ar(
             random_seed=random_seed,
             return_inferencedata=True,
         )
-        idata.extend(pm.sample_posterior_predictive(idata, var_names=["y"]))
+        ppc = pm.sample_posterior_predictive(
+            idata, var_names=["y"], extend_inferencedata=False
+        )
+        idata["posterior_predictive"] = ppc["posterior_predictive"]
 
     summary = az.summary(idata, var_names=["rho", "sigma"])
     logger.info("Bayesian AR posterior summary:\n%s", summary.to_string())
@@ -174,8 +177,11 @@ def fit_and_forecast(
     trace_path = _resolve_trace_path(bayes_cfg)
     if trace_path is not None:
         trace_path.parent.mkdir(parents=True, exist_ok=True)
-        idata.to_netcdf(trace_path)
-        logger.info("Saved MCMC trace to %s", trace_path)
+        try:
+            idata.to_netcdf(trace_path)
+            logger.info("Saved MCMC trace to %s", trace_path)
+        except (ValueError, OSError) as exc:
+            logger.warning("Could not save trace to %s: %s", trace_path, exc)
 
     forecast_draws, forecast_mean, forecast_lower, forecast_upper = forecast_from_posterior(
         idata,
