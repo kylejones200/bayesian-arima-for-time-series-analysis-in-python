@@ -1,5 +1,9 @@
 # Outputs
 outputs/
+*.nc
+
+# Local machine overrides (paths, secrets)
+config.local.yaml
 
 # Python
 __pycache__/

@@ -1,42 +1,77 @@
-# Bayesian ARIMA for time series analysis in Python
+# Bayesian AR for time series analysis in Python
 
 Published: 2024-12-29  
 Medium: [Bayesian ARIMA for time series analysis in Python](https://medium.com/@kyle-t-jones/bayesian-arima-for-time-series-analysis-in-python-aabbfe41dcf0)
 
-Robust comparison of a **Bayesian AR model** (PyMC) and **auto-ARIMA** (pmdarima) on real benchmark series with temporal train/test evaluation, uncertainty bands, and reproducible `uv` tooling.
+Companion code for the article. This repo implements **Bayesian AR(p)** with PyMC on a **stationary modeling scale** (e.g. `log_diff`), compared to **auto-SARIMA** and a matching **AR(p) MLE** fit via `pmdarima`. The article title says “ARIMA”; here the Bayesian side is AR on pre-differenced data, while the classical baseline can select seasonal ARIMA.
+
+![Raw series](docs/figures/raw_series.png)
 
 ## Quick start
 
+Requires [uv](https://docs.astral.sh/uv/).
+
 ```bash
-cd bayesian-arima-for-time-series-analysis-in-python
 uv sync
-uv run bayesian-arima-run
+uv run bayesian-arima-run              # full MCMC (4 chains, 1000 draws)
+uv run bayesian-arima-run --quick      # demo run (~200 draws)
 ```
 
-Figures are written to `outputs/figures/`. Edit `config.yaml` to change dataset, transform, or sampler settings.
+Outputs:
 
-## Recommended data
+| Path | Contents |
+|------|----------|
+| `outputs/figures/` | Plots (modeling + **original units**) |
+| `outputs/results.json` | Metrics, MCMC diagnostics, interpretation |
+| `outputs/trace.nc` | Posterior + posterior predictive (gitignored) |
 
-| Dataset (`config.yaml`) | Why use it |
-|-------------------------|------------|
-| `airline_passengers` (default) | Classic monthly seasonality; shows when differencing + seasonal ARIMA beats a low-order Bayesian AR |
-| `co2` | Smooth trend + annual cycle; good for `log_diff` or `seasonal_diff` |
-| `sunspots` | Non-seasonal cyclic dynamics; simpler stationary behavior |
-| `synthetic` | Controlled AR-like process for debugging |
-| `csv` | Your own columnar series via `data/csv_path`, `value_col`, `date_col` |
+## Data
 
-For business-style forecasting, point `csv` at monthly demand, sales, or utilization with a datetime column.
+Default: **North Dakota monthly oil production** (`data/north_dakota_oil_monthly.csv`). See [data/README.md](data/README.md) and [data/PROVENANCE.md](data/PROVENANCE.md).
 
-## Project layout
+```bash
+# Other built-ins
+uv run bayesian-arima-run --dataset airline_passengers
 
-- `src/bayesian_arima_ts/` — data loading, transforms, PyMC AR, auto-ARIMA, metrics, plots
-- `config.yaml` — dataset, transforms, sampler, output paths
-- `article.md` — original Medium export
+# Local PPDM well file (not committed)
+cp config.local.yaml.example config.local.yaml
+uv run bayesian-arima-run --production-path /path/to/north_dakota_production.csv
+```
 
-## Tests
+## What gets compared
+
+1. **Bayesian AR(p)** — PyMC `pm.AR`, posterior forecasts with uncertainty.
+2. **Fixed AR(p) MLE** — same order as Bayesian AR; validates MCMC against `pmdarima`.
+3. **Auto SARIMA** — seasonal search; often wins when seasonality remains after differencing.
+
+![Holdout forecasts (barrels)](docs/figures/holdout_forecasts_level.png)
+
+## Configuration
+
+`config.yaml` — transforms, holdout size, MCMC (4 chains by default), SARIMA bounds.  
+`config.local.yaml` — gitignored machine paths (see example file).
+
+## Development
 
 ```bash
 uv sync --extra dev
-uv run pytest -m "not slow"
-uv run pytest -m slow   # optional MCMC smoke test
+uv run ruff check src tests scripts
+uv run pytest                    # fast tests
+uv run pytest -m slow            # full MCMC integration
+```
+
+CI runs ruff + fast pytest on push.
+
+## Project layout
+
+```
+config.yaml
+config.local.yaml.example
+pyproject.toml / uv.lock
+src/bayesian_arima_ts/
+scripts/rebuild_monthly.py
+tests/
+data/
+docs/figures/          # example plots for README
+article.md
 ```

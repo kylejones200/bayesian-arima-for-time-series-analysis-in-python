@@ -67,8 +67,8 @@ def plot_trace(
     dpi: int,
     show: bool,
 ) -> None:
-    axes = az.plot_trace(idata, var_names=["rho", "sigma"], compact=True)
-    fig = axes[0, 0].figure
+    az.plot_trace(idata, var_names=["rho", "sigma"])
+    fig = plt.gcf()
     fig.tight_layout()
     _save_or_show(path, dpi=dpi, show=show)
 
@@ -137,6 +137,61 @@ def log_metrics_table(
 
 def output_paths(figures_dir: Path, fmt: str, names: list[str]) -> dict[str, Path]:
     return {name: figures_dir / f"{name}.{fmt}" for name in names}
+
+
+def plot_level_forecasts(
+    test_index: pd.Index,
+    actual_level: np.ndarray,
+    bayes_level: np.ndarray,
+    arima_level: np.ndarray,
+    *,
+    y_label: str = "Level",
+    path: Path | None,
+    dpi: int,
+    show: bool,
+) -> None:
+    fig, ax = plt.subplots(figsize=(11, 6))
+    ax.plot(test_index, actual_level, label="Actual", color="black", linewidth=2, marker="o", markersize=4)
+    ax.plot(test_index, bayes_level, label="Bayesian AR", color="crimson")
+    ax.plot(test_index, arima_level, label="Auto ARIMA", color="royalblue", linestyle="--")
+    ax.set_title("Holdout forecasts (original units)")
+    ax.set_xlabel("Date")
+    ax.set_ylabel(y_label)
+    ax.legend(loc="best")
+    ax.grid(True, alpha=0.3)
+    fig.tight_layout()
+    _save_or_show(path, dpi=dpi, show=show)
+
+
+def plot_posterior_predictive(
+    train_index: pd.Index,
+    train: np.ndarray,
+    idata: az.InferenceData,
+    *,
+    path: Path | None,
+    dpi: int,
+    show: bool,
+) -> None:
+    if "posterior_predictive" not in idata:
+        return
+    y_ppc = idata["posterior_predictive"]["y"].stack(sample=("chain", "draw")).values
+    if y_ppc.ndim > 2:
+        y_ppc = y_ppc.reshape(y_ppc.shape[0], -1)
+    mean = y_ppc.mean(axis=0)
+    lower = np.percentile(y_ppc, 2.5, axis=0)
+    upper = np.percentile(y_ppc, 97.5, axis=0)
+
+    fig, ax = plt.subplots(figsize=(10, 5))
+    ax.plot(train_index, train, label="Observed", color="black", linewidth=1.2)
+    ax.plot(train_index, mean, label="PPC mean", color="crimson", alpha=0.8)
+    ax.fill_between(train_index, lower, upper, color="crimson", alpha=0.2, label="95% PPC")
+    ax.set_title("Posterior predictive check (training window)")
+    ax.set_xlabel("Date")
+    ax.set_ylabel("Modeling scale")
+    ax.legend()
+    ax.grid(True, alpha=0.3)
+    fig.tight_layout()
+    _save_or_show(path, dpi=dpi, show=show)
 
 
 def plot_cfg(cfg: dict[str, Any]) -> tuple[Path, str, int, bool]:

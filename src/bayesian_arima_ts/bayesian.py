@@ -2,42 +2,43 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any
 
 import arviz as az
 import numpy as np
 import pymc as pm
 
+from bayesian_arima_ts.paths import PROJECT_ROOT
+
 logger = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
 class BayesianARResult:
-    idata: az.InferenceData
+    idata: Any
     ar_order: int
     train: np.ndarray
     forecast_draws: np.ndarray
     forecast_mean: np.ndarray
     forecast_lower: np.ndarray
     forecast_upper: np.ndarray
-    in_sample_mean: np.ndarray
-    in_sample_lower: np.ndarray
-    in_sample_upper: np.ndarray
+    trace_path: Path | None = None
 
 
-def _stack_posterior(idata: az.InferenceData, name: str) -> np.ndarray:
-    return idata.posterior[name].stack(sample=("chain", "draw")).values
-
-
-def _posterior_predictive_band(idata: az.InferenceData, var_name: str = "y") -> tuple[np.ndarray, np.ndarray, np.ndarray]:
-    samples = idata.posterior_predictive[var_name].stack(sample=("chain", "draw")).values
-    if samples.ndim == 3:
-        samples = samples[:, 0, :]
-    return (
-        samples.mean(axis=0),
-        np.percentile(samples, 2.5, axis=0),
-        np.percentile(samples, 97.5, axis=0),
-    )
+def _stack_posterior(idata: Any, name: str, *, param_dim: int | None = None) -> np.ndarray:
+    """Stack chains/draws to (n_samples, n_params) with sample on axis 0."""
+    stacked = idata["posterior"][name].stack(sample=("chain", "draw"))
+    other_dims = [dim for dim in stacked.dims if dim != "sample"]
+    if other_dims:
+        stacked = stacked.transpose("sample", *other_dims)
+    values = np.asarray(stacked.values, dtype=float)
+    n_samples = values.shape[0]
+    if values.ndim == 1:
+        return values if param_dim != 1 else values.reshape(-1, 1)
+    if param_dim is not None:
+        return values.reshape(n_samples, param_dim)
+    return values.reshape(n_samples, -1)
 
 
 def _simulate_ar_paths(
@@ -53,26 +54,29 @@ def _simulate_ar_paths(
     ar_coefs = rho[1:]
     order = len(ar_coefs)
     paths = np.zeros((n_paths, horizon))
-    state = np.tile(history[-order:], (n_paths, 1))
+    # Columns are [y_{t-1}, y_{t-2}, ...] to match PyMC pm.AR(rho=[c, phi1, phi2, ...])
+    state = np.tile(history[-order:][::-1], (n_paths, 1))
 
     for step in range(horizon):
         innovation = rng.normal(0.0, sigma, size=n_paths)
         paths[:, step] = intercept + np.sum(state * ar_coefs, axis=1) + innovation
-        state = np.roll(state, -1, axis=1)
-        state[:, -1] = paths[:, step]
+        state = np.roll(state, 1, axis=1)
+        state[:, 0] = paths[:, step]
     return paths
 
 
 def forecast_from_posterior(
-    idata: az.InferenceData,
+    idata: Any,
     history: np.ndarray,
     *,
+    ar_order: int,
     horizon: int,
     n_paths: int = 200,
     seed: int = 42,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
-    rho_samples = _stack_posterior(idata, "rho")
-    sigma_samples = _stack_posterior(idata, "sigma")
+    rho_size = ar_order + 1
+    rho_samples = _stack_posterior(idata, "rho", param_dim=rho_size)
+    sigma_samples = _stack_posterior(idata, "sigma", param_dim=1).ravel()
     n_draws = rho_samples.shape[0]
     rng = np.random.default_rng(seed)
 
@@ -104,7 +108,7 @@ def fit_bayesian_ar(
     target_accept: float,
     cores: int,
     random_seed: int,
-) -> az.InferenceData:
+) -> Any:
     rho_size = ar_order + 1
     init_dist = pm.Normal.dist(0.0, 5.0, shape=ar_order)
 
@@ -132,10 +136,19 @@ def fit_bayesian_ar(
 
     summary = az.summary(idata, var_names=["rho", "sigma"])
     logger.info("Bayesian AR posterior summary:\n%s", summary.to_string())
-    divergences = int(idata.sample_stats["diverging"].sum())
+    diverging = idata["sample_stats"]["diverging"] if "sample_stats" in idata else None
+    divergences = int(diverging.sum()) if diverging is not None else 0
     if divergences:
         logger.warning("MCMC finished with %s divergences", divergences)
     return idata
+
+
+def _resolve_trace_path(bayes_cfg: dict[str, Any]) -> Path | None:
+    raw = bayes_cfg.get("trace_path")
+    if not raw:
+        return None
+    path = Path(raw)
+    return path if path.is_absolute() else PROJECT_ROOT / path
 
 
 def fit_and_forecast(
@@ -152,16 +165,22 @@ def fit_and_forecast(
         ar_order=ar_order,
         draws=int(bayes_cfg.get("draws", 1000)),
         tune=int(bayes_cfg.get("tune", 1000)),
-        chains=int(bayes_cfg.get("chains", 2)),
+        chains=int(bayes_cfg.get("chains", 4)),
         target_accept=float(bayes_cfg.get("target_accept", 0.9)),
         cores=int(bayes_cfg.get("cores", 1)),
         random_seed=seed,
     )
 
-    in_sample_mean, in_sample_lower, in_sample_upper = _posterior_predictive_band(idata, "y")
+    trace_path = _resolve_trace_path(bayes_cfg)
+    if trace_path is not None:
+        trace_path.parent.mkdir(parents=True, exist_ok=True)
+        idata.to_netcdf(trace_path)
+        logger.info("Saved MCMC trace to %s", trace_path)
+
     forecast_draws, forecast_mean, forecast_lower, forecast_upper = forecast_from_posterior(
         idata,
         train,
+        ar_order=ar_order,
         horizon=horizon,
         seed=seed + 1,
     )
@@ -174,7 +193,5 @@ def fit_and_forecast(
         forecast_mean=forecast_mean,
         forecast_lower=forecast_lower,
         forecast_upper=forecast_upper,
-        in_sample_mean=in_sample_mean,
-        in_sample_lower=in_sample_lower,
-        in_sample_upper=in_sample_upper,
+        trace_path=trace_path,
     )

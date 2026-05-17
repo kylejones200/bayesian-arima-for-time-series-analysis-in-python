@@ -1,8 +1,9 @@
 [project]
 name = "bayesian-arima-ts"
-version = "0.2.0"
+version = "0.3.0"
 description = "Bayesian AR time series modeling with PyMC compared to classical ARIMA"
 readme = "README.md"
+license = "MIT"
 requires-python = ">=3.11"
 dependencies = [
     "arviz>=0.18",
@@ -12,12 +13,11 @@ dependencies = [
     "pmdarima>=2.0",
     "pymc>=5.12",
     "pyyaml>=6.0",
-    "scikit-learn>=1.4",
     "statsmodels>=0.14",
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=8.0"]
+dev = ["pytest>=8.0", "ruff>=0.8"]
 
 [project.scripts]
 bayesian-arima-run = "bayesian_arima_ts.runner:main"
@@ -34,6 +34,15 @@ package = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+addopts = "-m 'not slow'"
 markers = [
     "slow: full MCMC sampling (skipped by default)",
 ]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 108
+src = ["src", "tests", "scripts"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]

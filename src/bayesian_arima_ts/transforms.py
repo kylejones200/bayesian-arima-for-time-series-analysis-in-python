@@ -61,3 +61,36 @@ def temporal_train_test_split(
 def adf_pvalue(values: np.ndarray) -> float:
     result = adfuller(values, autolag="AIC")
     return float(result[1])
+
+
+def level_anchor(prepared: PreparedSeries, train_len: int) -> float:
+    """Last observed level immediately before the first holdout modeling date."""
+    last_train_date = prepared.modeling.index[train_len - 1]
+    return float(prepared.original.loc[last_train_date])
+
+
+def modeling_to_levels(
+    diffs: np.ndarray,
+    anchor_level: float,
+    transform: str,
+) -> np.ndarray:
+    """Map modeling-scale forecasts (often differences) back to original units."""
+    levels = np.empty(len(diffs), dtype=float)
+    prev = anchor_level
+    for i, d in enumerate(diffs):
+        if transform == "log_diff":
+            prev = prev * np.exp(d)
+        elif transform == "diff":
+            prev = prev + d
+        elif transform == "seasonal_diff":
+            prev = prev + d
+        elif transform == "log_seasonal_diff":
+            prev = prev * np.exp(d)
+        elif transform == "log":
+            prev = np.exp(d)
+        elif transform == "none":
+            prev = d
+        else:
+            raise ValueError(f"Cannot invert transform {transform!r}")
+        levels[i] = prev
+    return levels

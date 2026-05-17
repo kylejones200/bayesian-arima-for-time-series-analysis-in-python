@@ -2,22 +2,31 @@ logging:
   level: INFO
 
 data:
-  # airline_passengers | co2 | synthetic
-  dataset: airline_passengers
+  dataset: north_dakota_production
   transform: log_diff
-  test_size: 24
+  test_size: 12
   seed: 42
+  production_metric: oil
+  production_path: data/north_dakota_oil_monthly.csv
 
 bayesian:
   ar_order: 2
   draws: 1000
   tune: 1000
-  chains: 2
+  chains: 4
   target_accept: 0.9
   cores: 1
   random_seed: 42
+  trace_path: outputs/trace.nc
+
+# Used when running with --quick
+quick:
+  draws: 200
+  tune: 200
+  chains: 2
 
 classical:
+  compare_fixed_ar: true
   seasonal: true
   m: 12
   max_p: 3
@@ -32,5 +41,8 @@ classical:
 
 output:
   figures_dir: outputs/figures
+  results_path: outputs/results.json
   figure_format: png
   figure_dpi: 120
+  show: false
+  save_trace: true

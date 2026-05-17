@@ -1,0 +1,10 @@
+# Copy to config.local.yaml (gitignored) for paths that should not be committed.
+#
+#   cp config.local.yaml.example config.local.yaml
+#
+# Or pass on the CLI:
+#   uv run bayesian-arima-run --production-path /path/to/north_dakota_production.csv
+
+data:
+  production_path: /path/to/north_dakota_production.csv
+  # production_metric: gas
