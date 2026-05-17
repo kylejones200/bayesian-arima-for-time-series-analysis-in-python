@@ -1,0 +1,36 @@
+logging:
+  level: INFO
+
+data:
+  # airline_passengers | co2 | synthetic
+  dataset: airline_passengers
+  transform: log_diff
+  test_size: 24
+  seed: 42
+
+bayesian:
+  ar_order: 2
+  draws: 1000
+  tune: 1000
+  chains: 2
+  target_accept: 0.9
+  cores: 1
+  random_seed: 42
+
+classical:
+  seasonal: true
+  m: 12
+  max_p: 3
+  max_q: 3
+  max_P: 2
+  max_Q: 2
+  max_d: 2
+  max_D: 1
+  maxiter: 50
+  suppress_warnings: true
+  error_action: ignore
+
+output:
+  figures_dir: outputs/figures
+  figure_format: png
+  figure_dpi: 120
