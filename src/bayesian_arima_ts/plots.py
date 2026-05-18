@@ -89,10 +89,8 @@ def plot_forecast_comparison(
 ) -> None:
     fig, ax = plt.subplots(figsize=(11, 6))
     ax.plot(test_index, test, label="Actual", color="black", linewidth=2, marker="o", markersize=4)
-
     ax.plot(test_index, bayes_mean, label="Bayesian AR mean", color="crimson")
     ax.fill_between(test_index, bayes_lower, bayes_upper, color="crimson", alpha=0.2, label="Bayesian 95%")
-
     ax.plot(test_index, classical_mean, label="Auto ARIMA", color="royalblue", linestyle="--")
     ax.fill_between(
         test_index,
@@ -102,7 +100,6 @@ def plot_forecast_comparison(
         alpha=0.15,
         label="ARIMA 95%",
     )
-
     ax.set_title("Holdout forecast comparison (modeling scale)")
     ax.set_xlabel("Date")
     ax.set_ylabel("Value")
@@ -184,7 +181,6 @@ def plot_posterior_predictive(
     mean = np.squeeze(mean)
     lower = np.squeeze(lower)
     upper = np.squeeze(upper)
-
     fig, ax = plt.subplots(figsize=(10, 5))
     ax.plot(train_index, train, label="Observed", color="black", linewidth=1.2)
     ax.plot(train_index, mean, label="PPC mean", color="crimson", alpha=0.8)

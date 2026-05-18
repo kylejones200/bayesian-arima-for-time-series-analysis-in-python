@@ -54,7 +54,6 @@ def load_north_dakota_production(
 ) -> pd.Series:
     """
     Load monthly North Dakota production (barrels oil or MCF gas).
-
     Accepts either the bundled monthly aggregate (``data/north_dakota_oil_monthly.csv``)
     or the full well-level CSV from the PPDM archive (aggregated by ``ReportDate``).
     """

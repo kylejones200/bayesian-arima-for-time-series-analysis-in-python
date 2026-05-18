@@ -25,7 +25,6 @@ def aggregate_monthly(
     frame = pd.read_csv(source, usecols=["ReportDate", metric_col], parse_dates=["ReportDate"])
     monthly = frame.groupby("ReportDate", as_index=False)[metric_col].sum()
     monthly.columns = ["date", metric]
-
     if out is None:
         out = DEFAULT_DATA_DIR / f"north_dakota_{metric}_monthly.csv"
     out.parent.mkdir(parents=True, exist_ok=True)
@@ -46,7 +45,6 @@ def main() -> None:
     parser.add_argument("--metric", choices=["oil", "gas", "gas_sold"], default="oil")
     parser.add_argument("--out", type=Path, default=None)
     args = parser.parse_args()
-
     source = args.source
     if source is None:
         raise SystemExit(

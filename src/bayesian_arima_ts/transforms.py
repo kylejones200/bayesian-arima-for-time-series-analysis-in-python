@@ -47,9 +47,7 @@ def prepare_series(series: pd.Series, transform: str) -> PreparedSeries:
     )
 
 
-def temporal_train_test_split(
-    values: np.ndarray, *, test_size: int
-) -> tuple[np.ndarray, np.ndarray]:
+def temporal_train_test_split(values: np.ndarray, *, test_size: int) -> tuple[np.ndarray, np.ndarray]:
     if test_size <= 0:
         raise ValueError("test_size must be positive")
     if test_size >= len(values):

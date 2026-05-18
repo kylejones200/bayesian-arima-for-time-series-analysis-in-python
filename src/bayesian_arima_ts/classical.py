@@ -101,7 +101,6 @@ def fit_and_forecast(
 ) -> ClassicalARIMAResult:
     classical = cfg.get("classical") or {}
     mode = str(classical.get("mode", "auto"))
-
     if mode == "fixed_ar":
         if ar_order is None:
             ar_order = int((cfg.get("bayesian") or {}).get("ar_order", 1))

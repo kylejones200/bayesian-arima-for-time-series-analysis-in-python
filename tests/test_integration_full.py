@@ -25,11 +25,9 @@ def test_full_pipeline_mcmc_vs_arima(tmp_path: Path):
     }
     # Full sampling per config.yaml (1000 tune + 1000 draws x 2 chains)
     result = run_pipeline(cfg)
-
     results_file = Path(result["results_path"])
     assert results_file.is_file()
     payload = json.loads(results_file.read_text(encoding="utf-8"))
-
     assert payload["dataset"] == "airline_passengers"
     assert payload["mcmc"]["r_hat_max"] < 1.05
     assert payload["mcmc"]["divergences"] == 0

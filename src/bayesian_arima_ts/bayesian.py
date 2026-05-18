@@ -56,7 +56,6 @@ def _simulate_ar_paths(
     paths = np.zeros((n_paths, horizon))
     # Columns are [y_{t-1}, y_{t-2}, ...] to match PyMC pm.AR(rho=[c, phi1, phi2, ...])
     state = np.tile(history[-order:][::-1], (n_paths, 1))
-
     for step in range(horizon):
         innovation = rng.normal(0.0, sigma, size=n_paths)
         paths[:, step] = intercept + np.sum(state * ar_coefs, axis=1) + innovation
@@ -79,7 +78,6 @@ def forecast_from_posterior(
     sigma_samples = _stack_posterior(idata, "sigma", param_dim=1).ravel()
     n_draws = rho_samples.shape[0]
     rng = np.random.default_rng(seed)
-
     all_paths = np.zeros((n_draws, n_paths, horizon))
     for draw_idx in range(n_draws):
         all_paths[draw_idx] = _simulate_ar_paths(
@@ -111,7 +109,6 @@ def fit_bayesian_ar(
 ) -> Any:
     rho_size = ar_order + 1
     init_dist = pm.Normal.dist(0.0, 5.0, shape=ar_order)
-
     with pm.Model():
         rho = pm.Normal("rho", mu=0.0, sigma=0.5, shape=rho_size)
         sigma = pm.HalfNormal("sigma", sigma=1.0)
@@ -132,9 +129,7 @@ def fit_bayesian_ar(
             random_seed=random_seed,
             return_inferencedata=True,
         )
-        ppc = pm.sample_posterior_predictive(
-            idata, var_names=["y"], extend_inferencedata=False
-        )
+        ppc = pm.sample_posterior_predictive(idata, var_names=["y"], extend_inferencedata=False)
         idata["posterior_predictive"] = ppc["posterior_predictive"]
 
     summary = az.summary(idata, var_names=["rho", "sigma"])
@@ -173,7 +168,6 @@ def fit_and_forecast(
         cores=int(bayes_cfg.get("cores", 1)),
         random_seed=seed,
     )
-
     trace_path = _resolve_trace_path(bayes_cfg)
     if trace_path is not None:
         trace_path.parent.mkdir(parents=True, exist_ok=True)
@@ -190,7 +184,6 @@ def fit_and_forecast(
         horizon=horizon,
         seed=seed + 1,
     )
-
     return BayesianARResult(
         idata=idata,
         ar_order=ar_order,

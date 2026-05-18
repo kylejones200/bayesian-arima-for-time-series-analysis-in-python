@@ -92,7 +92,6 @@ def run_pipeline(cfg: dict[str, Any]) -> dict[str, Any]:
     seed = int(data_cfg.get("seed", 42))
     production_metric = str(data_cfg.get("production_metric", "oil"))
     ar_order = int((cfg.get("bayesian") or {}).get("ar_order", 2))
-
     series = load_series(
         dataset,
         seed=seed,
@@ -120,7 +119,6 @@ def run_pipeline(cfg: dict[str, Any]) -> dict[str, Any]:
     train, test = temporal_train_test_split(prepared.values, test_size=test_size)
     modeling_index = prepared.modeling.index
     test_index = modeling_index[len(train) :]
-
     figures_dir, fmt, dpi, show = plot_cfg(cfg)
     paths = output_paths(
         figures_dir,
@@ -134,7 +132,6 @@ def run_pipeline(cfg: dict[str, Any]) -> dict[str, Any]:
             "holdout_forecasts_level",
         ],
     )
-
     plot_raw_series(series, path=paths["raw_series"], dpi=dpi, show=show)
     plot_modeling_split(
         modeling_index,
@@ -145,7 +142,6 @@ def run_pipeline(cfg: dict[str, Any]) -> dict[str, Any]:
         dpi=dpi,
         show=show,
     )
-
     bayesian = fit_bayesian(
         train,
         ar_order=ar_order,
@@ -156,9 +152,7 @@ def run_pipeline(cfg: dict[str, Any]) -> dict[str, Any]:
     fixed_ar = None
     fixed_ar_metrics = None
     if compare_fixed:
-        classical, fixed_ar = fit_auto_and_fixed_ar(
-            train, horizon=len(test), ar_order=ar_order, cfg=cfg
-        )
+        classical, fixed_ar = fit_auto_and_fixed_ar(train, horizon=len(test), ar_order=ar_order, cfg=cfg)
     else:
         classical = fit_classical(train, horizon=len(test), cfg=cfg)
 
@@ -173,7 +167,6 @@ def run_pipeline(cfg: dict[str, Any]) -> dict[str, Any]:
         dpi=dpi,
         show=show,
     )
-
     plot_forecast_comparison(
         test_index,
         test,
@@ -187,7 +180,6 @@ def run_pipeline(cfg: dict[str, Any]) -> dict[str, Any]:
         dpi=dpi,
         show=show,
     )
-
     level = _level_metrics(
         prepared, len(train), transform, test, bayesian.forecast_mean, classical.forecast
     )
@@ -202,7 +194,6 @@ def run_pipeline(cfg: dict[str, Any]) -> dict[str, Any]:
         dpi=dpi,
         show=show,
     )
-
     bayes_metrics = summarize_forecast(
         test,
         bayesian.forecast_mean,
@@ -228,7 +219,6 @@ def run_pipeline(cfg: dict[str, Any]) -> dict[str, Any]:
         level["bayesian_metrics"].rmse,
         level["arima_metrics"].rmse,
     )
-
     report = build_comparison_report(
         dataset=dataset,
         transform=transform,
@@ -247,12 +237,10 @@ def run_pipeline(cfg: dict[str, Any]) -> dict[str, Any]:
         },
     )
     log_comparison_report(report)
-
     results_path = Path((cfg.get("output") or {}).get("results_path", "outputs/results.json"))
     if not results_path.is_absolute():
         results_path = PROJECT_ROOT / results_path
     save_comparison_report(report, results_path)
-
     return {
         "dataset": dataset,
         "transform": transform,
@@ -317,10 +305,8 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> None:
     parser = build_parser()
     args = parser.parse_args(argv)
-
     cfg = load_config(args.config)
     configure_logging(cfg)
-
     if args.quick:
         cfg = apply_quick_mode(cfg)
         logger.info("Quick mode: reduced MCMC draws/tune/chains")

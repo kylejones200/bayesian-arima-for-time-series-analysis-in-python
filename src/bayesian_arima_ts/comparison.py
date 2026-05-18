@@ -90,10 +90,8 @@ def mcmc_diagnostics(idata: Any) -> MCMCDiagnostics:
     summary = az.summary(idata, var_names=["rho", "sigma"])
     diverging = idata["sample_stats"]["diverging"] if "sample_stats" in idata else None
     divergences = int(diverging.sum()) if diverging is not None else 0
-
     ess_bulk_col = "ess_bulk" if "ess_bulk" in summary.columns else "ess_mean"
     ess_tail_col = "ess_tail" if "ess_tail" in summary.columns else ess_bulk_col
-
     return MCMCDiagnostics(
         divergences=divergences,
         r_hat_max=float(summary["r_hat"].max()),
@@ -111,12 +109,9 @@ def compare_forecasts(
     arima_mean = np.asarray(arima_mean, dtype=float)
     actual = np.asarray(actual, dtype=float)
     diff = bayesian_mean - arima_mean
-
     bayes_rmse = float(np.sqrt(np.mean((actual - bayesian_mean) ** 2)))
     arima_rmse = float(np.sqrt(np.mean((actual - arima_mean) ** 2)))
-
     corr = float(np.corrcoef(bayesian_mean, arima_mean)[0, 1]) if len(bayesian_mean) > 1 else float("nan")
-
     return ForecastComparison(
         correlation=corr,
         mean_abs_diff=float(np.mean(np.abs(diff))),
@@ -194,7 +189,6 @@ def build_comparison_report(
         classical.forecast,
         test,
     )
-
     seasonal = classical.seasonal_order
     bayes_vs_fixed = None
     fixed_order = None
