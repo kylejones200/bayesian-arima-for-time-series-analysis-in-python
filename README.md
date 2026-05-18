@@ -7,6 +7,14 @@ Companion code for the article. This repo implements **Bayesian AR(p)** with PyM
 
 ![Raw series](docs/figures/raw_series.png)
 
+## Business context
+
+Bayesian methods provide a probabilistic approach to time series analysis, offering a flexible and intuitive way to incorporate uncertainty...
+
+Bayesian methods provide a probabilistic approach to time series analysis, offering a flexible and intuitive way to incorporate uncertainty and prior knowledge into forecasting.
+
+Traditional time series methods, like ARIMA or exponential smoothing, produce point estimates of future values. Bayesian methods generate probabilistic forecasts, delivering distributions over future outcomes. This enables us to quantify uncertainty explicitly, which is especially valuable for risk management and decision-making.
+
 ## Quick start
 
 Requires [uv](https://docs.astral.sh/uv/).
