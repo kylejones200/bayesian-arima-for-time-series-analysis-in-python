@@ -1,0 +1,13 @@
+[package]
+name = "bayesian_arima_for_time_series_analysis_in_python_bench"
+description = "Standalone Rust benchmark (no Python)"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "bench"
+path = "src/main.rs"
+
+[dependencies]
+bayesian_arima_for_time_series_analysis_in_python_core = { path = "../core" }

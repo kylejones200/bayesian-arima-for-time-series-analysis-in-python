@@ -1,0 +1,9 @@
+[package]
+name = "bayesian_arima_for_time_series_analysis_in_python_core"
+description = "AR(1) Monte Carlo path simulation"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[lib]
+path = "src/lib.rs"
